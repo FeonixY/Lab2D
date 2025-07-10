@@ -1,0 +1,4 @@
+repository "Lab2D@monokumau@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
