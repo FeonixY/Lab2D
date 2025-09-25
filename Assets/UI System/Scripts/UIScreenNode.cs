@@ -1,42 +1,42 @@
 using System.Collections.Generic;
 
-public class UIScreenNode
+public class UIHUDNode
 {
-    public UIScreenBase UIScreen { get; private set; }
-    private UIScreenState screenState = UIScreenState.Destroyed;
-    private readonly List<UIScreenNode> relatedWidgetUIScreens = new();
+    public UIHUDBase UIHUD { get; private set; }
+    private UIHUDState hudState = UIHUDState.NotInitializedOrDestroyed;
+    private readonly List<UIHUDNode> relatedWidgetUIHUDs = new();
 
-    public UIScreenNode(UIScreenBase uiScreen)
+    public UIHUDNode(UIHUDBase uiHUD)
     {
-        UIScreen = uiScreen;
+        UIHUD = uiHUD;
     }
 
     public void Open(UIData data)
     {
-        switch (screenState)
+        switch (hudState)
         {
-            case UIScreenState.Destroyed:
-                UIResource.Instance.TryAddScreenInstance(UIScreen);
-                UIScreen.CreateScreen(data);
+            case UIHUDState.NotInitializedOrDestroyed:
+                UIResourceManager.Instance.TryAddHUDInstance(UIHUD);
+                UIHUD.CreateHUD(data);
                 break;
-            case UIScreenState.Disabled:
-                if (UIResource.Instance.TryGetScreenInstance(out UIScreenBase uiScreenBase))
+            case UIHUDState.Disabled:
+                if (UIResourceManager.Instance.TryGetHUDInstance(out UIHUDBase uiScreenBase))
                 {
-                    UIScreen = uiScreenBase;
-                    UIScreen.EnableScreen(data);
+                    UIHUD = uiScreenBase;
+                    UIHUD.EnableHUD(data);
                 }
                 break;
-            case UIScreenState.Enabled:
-                UIScreen.RefreshScreen(data);
+            case UIHUDState.Enabled:
+                UIHUD.RefreshHUD(data);
                 break;
         }
 
-        screenState = UIScreenState.Enabled;
+        hudState = UIHUDState.Enabled;
     }
 
     public void CloseRecursively()
     {
-        foreach (UIScreenNode relatedWidgetUIScreen in relatedWidgetUIScreens)
+        foreach (UIHUDNode relatedWidgetUIScreen in relatedWidgetUIHUDs)
         {
             relatedWidgetUIScreen.CloseRecursively();
         }
@@ -44,43 +44,50 @@ public class UIScreenNode
         Close();
     }
 
-    public void AddRelatedWidgetUIScreen(UIScreenNode node)
+    public void AddRelatedWidgetUIHUD(UIHUDNode node)
     {
-        relatedWidgetUIScreens.Add(node);
+        relatedWidgetUIHUDs.Add(node);
     }
 
     private void Close()
     {
-        switch (UIScreen.CacheType)
+        switch (UIHUD.CacheType)
         {
-            case UIScreenCacheType.Cache:
+            case UIHUDCacheType.Cache:
                 DisableNodeRecursively();
-                screenState = UIScreenState.Disabled;
+                hudState = UIHUDState.Disabled;
                 break;
-            case UIScreenCacheType.NotCache:
+            case UIHUDCacheType.NotCache:
                 DestroyNodeRecursively();
-                UIResource.Instance.TryRemoveScreenInstance(UIScreen);
-                screenState = UIScreenState.Destroyed;
+                UIResourceManager.Instance.TryRemoveHUDInstance(UIHUD);
+                hudState = UIHUDState.NotInitializedOrDestroyed;
                 break;
         }
     }
 
     private void DisableNodeRecursively()
     {
-        UIScreen.DisableScreen();
-        foreach (UIScreenNode relatedwidgetUIScreen in relatedWidgetUIScreens)
+        UIHUD.DisableHUD();
+        foreach (UIHUDNode relatedWidgetUIScreen in relatedWidgetUIHUDs)
         {
-            relatedwidgetUIScreen.DisableNodeRecursively();
+            relatedWidgetUIScreen.DisableNodeRecursively();
         }
     }
 
     private void DestroyNodeRecursively()
     {
-        UIScreen.DestroyScreen();
-        UIScreen = null;
-        foreach (UIScreenNode relatedwidgetUIScreen in relatedWidgetUIScreens)
+        // Remove from UIResourceManager before destroying
+        if (UIHUD != null)
         {
-            relatedwidgetUIScreen.DestroyNodeRecursively();
+            UIResourceManager.Instance.TryRemoveHUDInstance(UIHUD);
+        }
+        
+        UIHUD.DestroyHUD();
+        UIHUD = null;
+        
+        foreach (UIHUDNode relatedWidgetUIScreen in relatedWidgetUIHUDs)
+        {
+            relatedWidgetUIScreen.DestroyNodeRecursively();
         }
     }
 }

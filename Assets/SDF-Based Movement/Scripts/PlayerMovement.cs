@@ -7,11 +7,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnValidate()
     {
-        transform.localScale = new Vector3(PlayerRadius, PlayerRadius, 1);
+        transform.localScale = new (PlayerRadius, PlayerRadius, 1f);
     }
 
     private void FixedUpdate()
     {
-        transform.position = SDFMovement.instance.GetValidPositionBySDF(transform.position, InputManager.Movement, Speed, PlayerRadius);
+        transform.position = SDFMovement.Instance.GetValidPositionBySDF(transform.position, InputManager.Movement, Speed, PlayerRadius);
     }
 }

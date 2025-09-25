@@ -6,15 +6,14 @@ public class InputManager : MonoBehaviour
 {
     public static Vector2 Movement;
 
-    private PlayerInput PlayerInput;
-
+    private PlayerInput playerInput;
     private InputAction moveAction;
 
     private void Awake()
     {
-        PlayerInput = GetComponent<PlayerInput>();
+        playerInput = GetComponent<PlayerInput>();
 
-        moveAction = PlayerInput.actions["Move"];
+        moveAction = playerInput.actions["Move"];
     }
 
     private void Update()

@@ -8,12 +8,14 @@ public class SDFEditor : Editor
     {
         base.OnInspectorGUI();
 
-        SDFMovement test = target as SDFMovement;
+        SDFMovement movement = target as SDFMovement;
         if (GUILayout.Button("Calculate EDT"))
         {
-            test.Initialize();
-            test.RunRasterization();
-            test.EDT();
+            if (movement == null) return;
+            
+            movement.Initialize();
+            movement.RunRasterization();
+            movement.EDT();
         }
     }
 }
